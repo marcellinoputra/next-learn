@@ -20,6 +20,7 @@ import {
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const loginFormSchema = z.object({
   username: z
@@ -33,6 +34,9 @@ const loginFormSchema = z.object({
 type LoginFormSchema = z.infer<typeof loginFormSchema>;
 
 const LoginPage: React.FC = () => {
+  // Router
+  const router = useRouter();
+
   const form = useForm<LoginFormSchema>({
     resolver: zodResolver(loginFormSchema),
   });
@@ -41,6 +45,7 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = handleSubmit((values) => {
     alert(`Username: ${values.username} || Password: ${values.password}`);
+    router.push("/feed");
   });
   return (
     <main className="flex flex-col justify-center items-center max-w-screen-md min-h-screen mx-auto py-4 px-8">

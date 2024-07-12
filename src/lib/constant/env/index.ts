@@ -1,3 +1,3 @@
-const baseUrl = `${process.env.baseUrl}`;
+const DOMAIN = `${process.env.NEXT_PUBLIC_DOMAIN}`;
 
-export { baseUrl };
+export { DOMAIN };
