@@ -4,3 +4,8 @@ export interface DataFeed {
   title: string;
   body: string;
 }
+
+export interface CreateFeed {
+  title: string;
+  body: string;
+}
