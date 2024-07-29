@@ -32,7 +32,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/ReactToastify.css";
 
 const createFeedFormSchema = z.object({
   title: z
@@ -60,15 +61,15 @@ const ViewFeed: React.FC = () => {
   // State
   const [progress, setProgress] = useState<number>(0);
   const [isAddPostOpen, setIsAddPostOpen] = useState<boolean>(false);
-  const { toast } = useToast();
+
   // hooks
-  const { data, isPending, isError, refetch } = useFeed();
+  const { data, isError, refetch, isLoading } = useFeed();
   const mutation = useCreateFeed();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isPending) {
+    if (isLoading) {
       setProgress(0);
       interval = setInterval(() => {
         setProgress((prevProgress) => {
@@ -86,24 +87,20 @@ const ViewFeed: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPending]);
+  }, [isLoading]);
 
   useEffect(() => {
     if (mutation.isError) {
-      <div>An error occurred: {mutation.error.message}</div>;
+      toast.error("Something Went Wrong");
     }
-    if (mutation.isSuccess) {
-      toast({
-        title: mutation.data.data.message,
-      });
-      // setIsAddPostOpen(false);
-      // mutation.reset();
-      // form.reset();
-      // refetch();
-    }
-  }, [mutation.isError, mutation.isSuccess, mutation.error, mutation.data]);
 
-  if (isPending) {
+    if (mutation.isSuccess) {
+      toast.success("Berhasil Membuat Post");
+      setIsAddPostOpen(false);
+    }
+  }, [mutation.isError, mutation.isSuccess]);
+
+  if (isLoading) {
     return (
       <div className="flex flex-col max-w min-h-screen justify-center items-center p-5">
         <Progress value={progress} className="w-[60%]" />
@@ -123,22 +120,20 @@ const ViewFeed: React.FC = () => {
   }
 
   const onSubmit = handleSubmit((values) => {
-    console.log("Form submitted", values);
+    // console.log("Form submitted", values);
     try {
       mutation.mutate({
         title: values.title,
         body: values.body,
       });
-      // Jika berhasil, mutation.isSuccess akan menjadi true,
-      // yang akan memicu efek untuk menutup dialog dan me-refresh data
     } catch (error) {
       console.error("Error submitting form:", error);
-      // Handle error (misalnya, menampilkan pesan error kepada pengguna)
     }
   });
 
   return (
     <main className="flex flex-col max-w min-h-screen p-5">
+      <ToastContainer />
       <div className="flex flex-start justify-between items-start mb-5">
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           The Post
@@ -163,10 +158,10 @@ const ViewFeed: React.FC = () => {
         </Card>
       ))}
 
-      <Form {...form}>
-        <form onSubmit={onSubmit}>
-          <Dialog open={isAddPostOpen} onOpenChange={setIsAddPostOpen}>
-            <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={isAddPostOpen} onOpenChange={setIsAddPostOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <Form {...form}>
+            <form onSubmit={onSubmit}>
               <DialogHeader>
                 <DialogTitle>Add New Post</DialogTitle>
                 <DialogDescription>
@@ -208,10 +203,10 @@ const ViewFeed: React.FC = () => {
               <DialogFooter>
                 <Button type="submit">Save Post</Button>
               </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </form>
-      </Form>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
